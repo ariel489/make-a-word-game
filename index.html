@@ -48,7 +48,7 @@
   .rules { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; margin-top: 22px; line-height: 1.6; font-size: .95em; }
   .form-row { max-width: 420px; margin: 0 auto 12px; }
   .form-row label { display: block; font-weight: bold; margin-bottom: 6px; }
-  .form-row input, .form-row select {
+  .form-row input[type=text], .form-row select {
     width: 100%;
     padding: 12px;
     border-radius: 10px;
@@ -56,6 +56,9 @@
     font-size: 1em;
     color: #333;
   }
+  .check-row { max-width: 420px; margin: 12px auto; display: flex; align-items: center; gap: 10px; }
+  .check-row input[type=checkbox] { width: 18px; height: 18px; cursor: pointer; }
+  .check-row label { cursor: pointer; }
   .center { text-align: center; }
   .room-banner {
     background: rgba(0,0,0,0.25);
@@ -98,7 +101,9 @@
     padding: 2px 10px;
     font-size: .8em;
     font-weight: bold;
+    margin-left: 4px;
   }
+  .badge.facilitator { background: #f1c40f; color: #222; }
   .letters-box {
     background: #fff;
     color: #333;
@@ -158,6 +163,15 @@
   .small-note { text-align: center; font-size: .88em; opacity: .85; margin-top: 8px; }
   .status { text-align: center; opacity: .85; font-style: italic; min-height: 1.2em; margin: 8px 0; }
   .err { color: #ffd1d1; text-align: center; min-height: 1.2em; margin-top: 8px; }
+  .facilitator-banner {
+    background: rgba(241, 196, 15, 0.18);
+    border: 1px solid rgba(241, 196, 15, 0.5);
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+    margin-bottom: 14px;
+    font-size: .95em;
+  }
 </style>
 </head>
 <body>
@@ -175,8 +189,9 @@
       <strong>How to play:</strong><br>
       • Host creates a room and shares the 6-letter code.<br>
       • Friends join from anywhere using the code.<br>
+      • The host can play, or choose to be a facilitator (referee) who doesn't play.<br>
       • Once everyone's in, host clicks Start. All players see the same 2 letters at the same time.<br>
-      • You have 12 seconds to type a real English word containing BOTH letters.<br>
+      • You have 15 seconds to type a real English word containing BOTH letters.<br>
       • Copy &amp; paste are disabled. Used words can't be repeated.<br>
       • First to 2 points (2 players) or 3 points (3 players) wins!
     </div>
@@ -195,6 +210,10 @@
         <option value="2">2 Players (first to 2 wins)</option>
         <option value="3">3 Players (first to 3 wins)</option>
       </select>
+    </div>
+    <div class="check-row">
+      <input id="facilitatorCheck" type="checkbox" />
+      <label for="facilitatorCheck">I'll facilitate only (don't play, just run the game)</label>
     </div>
     <div class="center">
       <button onclick="backToMenu()">Back</button>
@@ -243,11 +262,14 @@
       <div>Room: <span class="room-code" id="gameCode">------</span></div>
       <div class="status" id="roundStatus" style="margin:0;"></div>
     </div>
+    <div id="facilitatorBanner" class="facilitator-banner" style="display:none;">
+      🎤 You are the facilitator. Click <strong>Start Round</strong> when players are ready.
+    </div>
     <div class="letters-box">
       <div class="letters hidden" id="lettersDisplay">? ?</div>
       <div class="sub">Make a word containing both letters</div>
     </div>
-    <div class="timer" id="timer">12</div>
+    <div class="timer" id="timer">15</div>
     <div class="controls">
       <button id="startRoundBtn" onclick="hostStartRound()" disabled>Start Round</button>
       <button onclick="leaveRoom()">Quit</button>
@@ -269,7 +291,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, deleteDoc,
-  runTransaction, serverTimestamp, deleteField
+  runTransaction, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -284,15 +306,17 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Local player state
+const ROUND_SECONDS = 15;
+
 const state = {
   roomCode: null,
   unsubscribe: null,
   myId: 'p_' + Math.random().toString(36).slice(2, 10),
   myName: '',
   isHost: false,
+  isFacilitator: false, // true if I'm the host AND not playing
   currentRoom: null,
-  cards: {},      // playerId -> {cardEl, inputEl, btnEl, scoreEl, msgEl}
+  cards: {},
   timerInterval: null,
   lastRoundId: null,
   submittingForRound: null
@@ -323,6 +347,7 @@ function showScreen(id) {
 window.showCreate = () => {
   document.getElementById('createErr').textContent = '';
   document.getElementById('hostName').value = '';
+  document.getElementById('facilitatorCheck').checked = false;
   showScreen('createScreen');
   setTimeout(() => document.getElementById('hostName').focus(), 50);
 };
@@ -338,12 +363,13 @@ window.backToMenu = () => showScreen('menuScreen');
 window.createRoom = async () => {
   const name = (document.getElementById('hostName').value || '').trim();
   const maxPlayers = parseInt(document.getElementById('numPlayersSelect').value, 10);
+  const facilitate = !!document.getElementById('facilitatorCheck').checked;
   const errEl = document.getElementById('createErr');
   errEl.textContent = '';
   if (!name) { errEl.textContent = 'Please enter your name.'; return; }
   state.myName = name;
+  state.isFacilitator = facilitate;
 
-  // Find an unused code (try a few times)
   let code = null;
   for (let i = 0; i < 5; i++) {
     const c = randomCode();
@@ -355,15 +381,17 @@ window.createRoom = async () => {
   state.roomCode = code;
   state.isHost = true;
 
+  const players = facilitate ? [] : [{ id: state.myId, name: name, score: 0 }];
+
   try {
     await setDoc(doc(db, 'rooms', code), {
       hostId: state.myId,
+      hostName: name,
+      hostIsFacilitator: facilitate,
       maxPlayers,
       targetScore: maxPlayers,
       status: 'lobby',
-      players: [
-        { id: state.myId, name: name, score: 0 }
-      ],
+      players,
       usedWords: [],
       round: null,
       winnerId: null,
@@ -386,6 +414,7 @@ window.joinRoom = async () => {
   state.myName = name;
   state.roomCode = code;
   state.isHost = false;
+  state.isFacilitator = false;
 
   try {
     const ref = doc(db, 'rooms', code);
@@ -418,6 +447,8 @@ function enterRoom() {
     }
     const data = snap.data();
     state.currentRoom = data;
+    // Refresh isFacilitator from server in case
+    state.isFacilitator = (data.hostId === state.myId) && !!data.hostIsFacilitator;
     renderRoom(data);
   });
 }
@@ -428,7 +459,7 @@ window.copyCode = async () => {
     document.getElementById('lobbyStatus').textContent = 'Code copied!';
     setTimeout(() => {
       const el = document.getElementById('lobbyStatus');
-      if (el.textContent === 'Code copied!') el.textContent = '';
+      if (el && el.textContent === 'Code copied!') el.textContent = '';
     }, 1500);
   } catch (e) {
     document.getElementById('lobbyStatus').textContent = 'Code: ' + state.roomCode;
@@ -443,12 +474,18 @@ window.leaveRoom = async () => {
       const snap = await tx.get(ref);
       if (!snap.exists()) return;
       const data = snap.data();
-      const remaining = (data.players || []).filter(p => p.id !== state.myId);
-      if (remaining.length === 0 || data.hostId === state.myId) {
-        // Host leaving or last player -> delete room
+      if (data.hostId === state.myId) {
         tx.delete(ref);
       } else {
-        tx.update(ref, { players: remaining });
+        const remaining = (data.players || []).filter(p => p.id !== state.myId);
+        if (remaining.length === 0 && data.hostIsFacilitator) {
+          // No players left; keep room open for facilitator
+          tx.update(ref, { players: remaining });
+        } else if (remaining.length === 0) {
+          tx.delete(ref);
+        } else {
+          tx.update(ref, { players: remaining });
+        }
       }
     });
   } catch (e) {}
@@ -460,6 +497,7 @@ function cleanupAndReturnToMenu() {
   if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
   state.roomCode = null;
   state.isHost = false;
+  state.isFacilitator = false;
   state.currentRoom = null;
   state.cards = {};
   state.lastRoundId = null;
@@ -476,7 +514,6 @@ function renderRoom(data) {
       showScreen('gameScreen');
       buildPlayerCards(data);
     } else {
-      // Update cards if player list changed
       buildPlayerCards(data);
     }
     renderGame(data);
@@ -488,18 +525,34 @@ function renderRoom(data) {
 function renderLobby(data) {
   const list = document.getElementById('lobbyList');
   list.innerHTML = '';
+
+  // Show host first (especially if facilitator)
+  const hostLine = document.createElement('div');
+  hostLine.className = 'player-line';
+  const hostTags = [];
+  if (data.hostIsFacilitator) hostTags.push('<span class="badge facilitator">facilitator</span>');
+  else hostTags.push('<span class="badge">host</span>');
+  if (data.hostId === state.myId) hostTags.push('<span class="badge">you</span>');
+  hostLine.innerHTML = '<span>' + escapeHtml(data.hostName || 'Host') + '</span><span>' + hostTags.join(' ') + '</span>';
+  list.appendChild(hostLine);
+
+  // Then players (excluding host if not facilitator they'll already be in players[])
   data.players.forEach(p => {
+    if (p.id === data.hostId) return; // already shown above
     const line = document.createElement('div');
     line.className = 'player-line';
     const tags = [];
-    if (p.id === data.hostId) tags.push('host');
-    if (p.id === state.myId) tags.push('you');
-    line.innerHTML = '<span>' + escapeHtml(p.name) + '</span>' +
-                     '<span>' + tags.map(t => '<span class="badge">'+t+'</span>').join(' ') + '</span>';
+    if (p.id === state.myId) tags.push('<span class="badge">you</span>');
+    line.innerHTML = '<span>' + escapeHtml(p.name) + '</span><span>' + tags.join(' ') + '</span>';
     list.appendChild(line);
   });
+
+  // If host isn't facilitator and is also a player, they're already in players[].
+  // Add a separator note about counts
   document.getElementById('lobbyStatus').textContent =
-    data.players.length + ' / ' + data.maxPlayers + ' players';
+    data.players.length + ' / ' + data.maxPlayers + ' players' +
+    (data.hostIsFacilitator ? ' (+ facilitator)' : '');
+
   const startBtn = document.getElementById('startBtn');
   startBtn.style.display = state.isHost ? '' : 'none';
   startBtn.disabled = !(state.isHost && data.players.length === data.maxPlayers);
@@ -518,7 +571,6 @@ window.hostStartGame = async () => {
 
 function buildPlayerCards(data) {
   const grid = document.getElementById('playersGrid');
-  // Rebuild from scratch only if player set changed
   const existingIds = Object.keys(state.cards);
   const newIds = data.players.map(p => p.id);
   const sameSet = existingIds.length === newIds.length &&
@@ -577,7 +629,10 @@ function buildPlayerCards(data) {
 }
 
 function renderGame(data) {
-  // Update scores on cards
+  // Facilitator banner
+  document.getElementById('facilitatorBanner').style.display =
+    (state.isHost && data.hostIsFacilitator) ? '' : 'none';
+
   data.players.forEach(p => {
     const c = state.cards[p.id];
     if (c) c.scoreEl.textContent = p.score;
@@ -590,16 +645,20 @@ function renderGame(data) {
 
   const round = data.round;
   if (!round) {
-    // Between rounds
     if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
     ld.textContent = '? ?';
     ld.classList.add('hidden');
-    timerEl.textContent = '12';
+    timerEl.textContent = String(ROUND_SECONDS);
     startBtn.style.display = state.isHost ? '' : 'none';
     startBtn.disabled = !state.isHost;
     startBtn.textContent = 'Start Round';
-    status.textContent = state.isHost ? 'You are host. Click Start Round.' : 'Waiting for host to start...';
-    // Reset my input
+    if (state.isHost && data.hostIsFacilitator) {
+      status.textContent = 'You facilitate. Click Start Round.';
+    } else if (state.isHost) {
+      status.textContent = 'You are host. Click Start Round.';
+    } else {
+      status.textContent = 'Waiting for host to start...';
+    }
     const me = state.cards[state.myId];
     if (me) {
       me.inputEl.value = '';
@@ -619,24 +678,21 @@ function renderGame(data) {
     return;
   }
 
-  // Active round
   ld.textContent = round.letters[0] + '  ' + round.letters[1];
   ld.classList.remove('hidden');
   startBtn.disabled = true;
   status.textContent = 'Round in progress!';
 
-  // Server-anchored timer
   const startMs = round.startMs;
   if (state.timerInterval) clearInterval(state.timerInterval);
   const tick = () => {
     const elapsed = (Date.now() - startMs) / 1000;
-    const left = Math.max(0, Math.ceil(12 - elapsed));
+    const left = Math.max(0, Math.ceil(ROUND_SECONDS - elapsed));
     timerEl.textContent = left;
     if (left <= 0) {
       clearInterval(state.timerInterval);
       state.timerInterval = null;
       timerEl.textContent = '0';
-      // Host triggers end-of-round resolution if not already moved on
       if (state.isHost) {
         maybeEndRound();
       }
@@ -645,7 +701,6 @@ function renderGame(data) {
   tick();
   state.timerInterval = setInterval(tick, 250);
 
-  // Per-player submission feedback
   const subs = round.submissions || {};
   data.players.forEach(p => {
     const c = state.cards[p.id];
@@ -669,7 +724,6 @@ function renderGame(data) {
     }
   });
 
-  // Enable my input if I haven't submitted yet
   const me = state.cards[state.myId];
   if (me) {
     const mySub = subs[state.myId];
@@ -679,7 +733,6 @@ function renderGame(data) {
     } else {
       me.inputEl.disabled = false;
       me.btnEl.disabled = false;
-      // Auto-focus once when round starts
       if (state.lastRoundId !== round.id) {
         me.inputEl.value = '';
         me.msgEl.textContent = '';
@@ -717,19 +770,16 @@ async function submitMyWord() {
   me.btnEl.disabled = true;
   localFlash(me, '', '⏳ Checking "' + raw + '"...');
 
-  // Check elapsed time
   const elapsed = (Date.now() - round.startMs) / 1000;
-  if (elapsed > 12) {
+  if (elapsed > ROUND_SECONDS) {
     state.submittingForRound = null;
     localFlash(me, 'invalid', '⏰ Too late.');
     return;
   }
 
-  // Check dictionary
   const ok = await checkDictionary(raw);
   let valid = ok;
 
-  // Run transaction: mark my submission, possibly increment my score
   const ref = doc(db, 'rooms', state.roomCode);
   try {
     await runTransaction(db, async (tx) => {
@@ -750,7 +800,6 @@ async function submitMyWord() {
         if (idx >= 0) players[idx].score = (players[idx].score || 0) + 1;
         updates.players = players;
         updates.usedWords = [...(d.usedWords || []), raw];
-        // Check immediate win
         if (players[idx] && players[idx].score >= d.targetScore) {
           updates.status = 'ended';
           updates.winnerId = state.myId;
@@ -758,14 +807,11 @@ async function submitMyWord() {
       }
       tx.update(ref, updates);
     });
-  } catch (e) {
-    // ignore
-  }
+  } catch (e) {}
   state.submittingForRound = null;
 }
 
 async function maybeEndRound() {
-  // Host only: after timer ends, advance the round
   const ref = doc(db, 'rooms', state.roomCode);
   try {
     await runTransaction(db, async (tx) => {
@@ -773,16 +819,13 @@ async function maybeEndRound() {
       if (!snap.exists()) return;
       const d = snap.data();
       if (!d.round) return;
-      // Confirm timer has expired
       const elapsed = (Date.now() - d.round.startMs) / 1000;
-      if (elapsed < 12) return;
-      // If someone already won, end the game
+      if (elapsed < ROUND_SECONDS) return;
       const top = Math.max(...d.players.map(p => p.score || 0));
       const winners = d.players.filter(p => (p.score || 0) === top && top >= d.targetScore);
       if (winners.length === 1) {
         tx.update(ref, { status: 'ended', winnerId: winners[0].id, round: null });
       } else {
-        // Clear round; host will start next
         tx.update(ref, { round: null });
       }
     });
@@ -835,20 +878,22 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-// Clean up if user closes tab
 window.addEventListener('beforeunload', () => {
   if (state.roomCode) {
     const ref = doc(db, 'rooms', state.roomCode);
-    // Best-effort cleanup
     runTransaction(db, async (tx) => {
       const snap = await tx.get(ref);
       if (!snap.exists()) return;
       const data = snap.data();
-      const remaining = (data.players || []).filter(p => p.id !== state.myId);
-      if (remaining.length === 0 || data.hostId === state.myId) {
+      if (data.hostId === state.myId) {
         tx.delete(ref);
       } else {
-        tx.update(ref, { players: remaining });
+        const remaining = (data.players || []).filter(p => p.id !== state.myId);
+        if (remaining.length === 0 && !data.hostIsFacilitator) {
+          tx.delete(ref);
+        } else {
+          tx.update(ref, { players: remaining });
+        }
       }
     }).catch(() => {});
   }

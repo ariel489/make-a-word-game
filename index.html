@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Make a Word Game</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    color: #fff;
+  }
+  .container {
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 700px;
+    width: 100%;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+  h1 { text-align: center; margin-bottom: 20px; font-size: 2.2em; }
+  .screen { display: none; }
+  .screen.active { display: block; }
+  button {
+    background: #ff6b6b;
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 1em;
+    cursor: pointer;
+    font-weight: bold;
+    margin: 5px;
+    transition: transform .15s, background .15s;
+  }
+  button:hover:not(:disabled) { background: #ff5252; transform: translateY(-2px); }
+  button:disabled { background: #999; cursor: not-allowed; }
+  .mode-select { display: flex; flex-direction: column; align-items: center; gap: 15px; margin-top: 20px; }
+  .mode-select button { width: 250px; font-size: 1.1em; padding: 15px; }
+  .rules { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; margin-top: 20px; line-height: 1.6; }
+  .scoreboard {
+    display: flex;
+    justify-content: space-around;
+    background: rgba(0,0,0,0.2);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+  }
+  .player-score { text-align: center; padding: 5px 15px; border-radius: 8px; min-width: 100px; }
+  .player-score.active { background: #ff6b6b; }
+  .player-score .name { font-weight: bold; font-size: 1.1em; }
+  .player-score .score { font-size: 1.8em; }
+  .letters-box {
+    background: #fff;
+    color: #333;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    margin: 20px 0;
+  }
+  .letters {
+    font-size: 4em;
+    font-weight: bold;
+    letter-spacing: 20px;
+    color: #764ba2;
+    margin-bottom: 10px;
+  }
+  .timer {
+    font-size: 2em;
+    font-weight: bold;
+    color: #ff6b6b;
+    margin: 15px 0;
+  }
+  .turn-label { font-size: 1.3em; text-align: center; margin-bottom: 15px; }
+  .input-area { display: flex; gap: 10px; margin: 15px 0; }
+  #wordInput {
+    flex: 1;
+    padding: 14px;
+    font-size: 1.2em;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+    color: #333;
+    text-transform: lowercase;
+  }
+  #wordInput:disabled { background: #ddd; }
+  .message {
+    text-align: center;
+    padding: 12px;
+    border-radius: 10px;
+    margin: 10px 0;
+    min-height: 24px;
+    font-weight: bold;
+  }
+  .message.valid { background: rgba(46, 204, 113, 0.4); }
+  .message.invalid { background: rgba(231, 76, 60, 0.4); }
+  .center { text-align: center; }
+  .winner {
+    font-size: 2.5em;
+    text-align: center;
+    color: #ffd700;
+    margin: 20px 0;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🎮 Make a Word Game</h1>
+
+  <div id="menuScreen" class="screen active">
+    <p class="center">Choose number of players:</p>
+    <div class="mode-select">
+      <button onclick="startGame(2)">2 Players (First to 2 wins)</button>
+      <button onclick="startGame(3)">3 Players (First to 3 wins)</button>
+    </div>
+    <div class="rules">
+      <strong>How to play:</strong><br>
+      • Two random letters are shown.<br>
+      • The current player has 12 seconds to type a real word that contains BOTH letters.<br>
+      • Copy &amp; paste are disabled.<br>
+      • Valid word = 1 point. Invalid word or timeout = no point.<br>
+      • Players take turns. First to reach the target score wins!
+    </div>
+  </div>
+
+  <div id="gameScreen" class="screen">
+    <div class="scoreboard" id="scoreboard"></div>
+    <div class="turn-label" id="turnLabel">Player 1's turn</div>
+    <div class="letters-box">
+      <div class="letters" id="lettersDisplay">- -</div>
+      <div style="color:#666;font-size:.95em;">Make a word containing both letters</div>
+    </div>
+    <div class="timer" id="timer">12</div>
+    <div class="input-area">
+      <input type="text" id="wordInput" placeholder="Type your word..." autocomplete="off" />
+      <button id="submitBtn" onclick="submitWord()">Submit</button>
+    </div>
+    <div class="center">
+      <button id="startTurnBtn" onclick="startTurn()">Start</button>
+    </div>
+    <div class="message" id="message"></div>
+  </div>
+
+  <div id="endScreen" class="screen">
+    <div class="winner" id="winnerText"></div>
+    <div class="scoreboard" id="finalScoreboard"></div>
+    <div class="center">
+      <button onclick="resetToMenu()">Play Again</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let numPlayers = 2;
+let targetScore = 2;
+let scores = [];
+let currentPlayer = 0;
+let letters = ['', ''];
+let timeLeft = 12;
+let timerInterval = null;
+let turnActive = false;
+let usedWords = new Set();
+
+const VOWELS = 'AEIOU';
+const CONSONANTS = 'BCDFGHJKLMNPRSTW';
+
+function randomLetters() {
+  const a = VOWELS[Math.floor(Math.random()*VOWELS.length)];
+  const b = CONSONANTS[Math.floor(Math.random()*CONSONANTS.length)];
+  return Math.random() < 0.5 ? [a,b] : [b,a];
+}
+
+function startGame(players) {
+  numPlayers = players;
+  targetScore = players;
+  scores = new Array(players).fill(0);
+  currentPlayer = 0;
+  usedWords = new Set();
+  document.getElementById('menuScreen').classList.remove('active');
+  document.getElementById('endScreen').classList.remove('active');
+  document.getElementById('gameScreen').classList.add('active');
+  renderScoreboard('scoreboard');
+  prepareTurn();
+}
+
+function renderScoreboard(id) {
+  const sb = document.getElementById(id);
+  sb.innerHTML = '';
+  for (let i = 0; i < numPlayers; i++) {
+    const div = document.createElement('div');
+    div.className = 'player-score' + (i === currentPlayer && id === 'scoreboard' ? ' active' : '');
+    div.innerHTML = '<div class="name">Player ' + (i+1) + '</div><div class="score">' + scores[i] + '</div>';
+    sb.appendChild(div);
+  }
+}
+
+function prepareTurn() {
+  turnActive = false;
+  letters = randomLetters();
+  document.getElementById('lettersDisplay').textContent = letters[0] + '  ' + letters[1];
+  document.getElementById('turnLabel').textContent = 'Player ' + (currentPlayer + 1) + "'s turn";
+  document.getElementById('timer').textContent = '12';
+  document.getElementById('wordInput').value = '';
+  document.getElementById('wordInput').disabled = true;
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('startTurnBtn').disabled = false;
+  document.getElementById('startTurnBtn').textContent = 'Start';
+  document.getElementById('message').textContent = '';
+  document.getElementById('message').className = 'message';
+  renderScoreboard('scoreboard');
+}
+
+function startTurn() {
+  if (turnActive) return;
+  turnActive = true;
+  timeLeft = 12;
+  document.getElementById('timer').textContent = timeLeft;
+  document.getElementById('wordInput').disabled = false;
+  document.getElementById('submitBtn').disabled = false;
+  document.getElementById('startTurnBtn').disabled = true;
+  document.getElementById('wordInput').focus();
+
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    document.getElementById('timer').textContent = timeLeft;
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      endTurn(false, "⏰ Time's up! No point awarded.");
+    }
+  }, 1000);
+}
+
+async function submitWord() {
+  if (!turnActive) return;
+  const raw = document.getElementById('wordInput').value.trim().toLowerCase();
+  if (!raw) return;
+
+  // must contain both letters
+  const l1 = letters[0].toLowerCase();
+  const l2 = letters[1].toLowerCase();
+  if (!raw.includes(l1) || !raw.includes(l2)) {
+    flash('invalid', '❌ Word must contain both "' + letters[0] + '" and "' + letters[1] + '".');
+    return;
+  }
+
+  if (usedWords.has(raw)) {
+    flash('invalid', '❌ Word already used this game.');
+    return;
+  }
+
+  // only letters
+  if (!/^[a-z]+$/.test(raw)) {
+    flash('invalid', '❌ Letters only, please.');
+    return;
+  }
+
+  // Disable while validating
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('wordInput').disabled = true;
+
+  const isWord = await checkDictionary(raw);
+  if (!isWord) {
+    flash('invalid', '❌ "' + raw + '" is not a valid English word.');
+    document.getElementById('submitBtn').disabled = false;
+    document.getElementById('wordInput').disabled = false;
+    document.getElementById('wordInput').focus();
+    return;
+  }
+
+  usedWords.add(raw);
+  clearInterval(timerInterval);
+  scores[currentPlayer]++;
+  endTurn(true, '✅ "' + raw + '" is valid! +1 point for Player ' + (currentPlayer + 1) + '.');
+}
+
+async function checkDictionary(word) {
+  try {
+    const r = await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/' + encodeURIComponent(word));
+    return r.ok;
+  } catch (e) {
+    // Offline fallback: accept if length >= 2
+    return word.length >= 2;
+  }
+}
+
+function flash(kind, msg) {
+  const m = document.getElementById('message');
+  m.textContent = msg;
+  m.className = 'message ' + kind;
+}
+
+function endTurn(success, msg) {
+  turnActive = false;
+  clearInterval(timerInterval);
+  document.getElementById('wordInput').disabled = true;
+  document.getElementById('submitBtn').disabled = true;
+  flash(success ? 'valid' : 'invalid', msg);
+  renderScoreboard('scoreboard');
+
+  // check winner
+  if (scores[currentPlayer] >= targetScore) {
+    setTimeout(showWinner, 1200);
+    return;
+  }
+
+  currentPlayer = (currentPlayer + 1) % numPlayers;
+  setTimeout(() => {
+    prepareTurn();
+  }, 1800);
+}
+
+function showWinner() {
+  document.getElementById('gameScreen').classList.remove('active');
+  document.getElementById('endScreen').classList.add('active');
+  document.getElementById('winnerText').textContent = '🏆 Player ' + (currentPlayer + 1) + ' wins!';
+  renderScoreboard('finalScoreboard');
+}
+
+function resetToMenu() {
+  document.getElementById('endScreen').classList.remove('active');
+  document.getElementById('gameScreen').classList.remove('active');
+  document.getElementById('menuScreen').classList.add('active');
+}
+
+// Disable copy/paste/cut/drag on the word input
+window.addEventListener('DOMContentLoaded', () => {
+  const inp = document.getElementById('wordInput');
+  ['paste','copy','cut','drop','dragstart','dragover','contextmenu'].forEach(evt => {
+    inp.addEventListener(evt, e => e.preventDefault());
+  });
+  inp.addEventListener('keydown', e => {
+    // Block Ctrl/Cmd + C/V/X/A
+    if ((e.ctrlKey || e.metaKey) && ['c','v','x','a','C','V','X','A'].includes(e.key)) {
+      e.preventDefault();
+    }
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      submitWord();
+    }
+  });
+});
+</script>
+</body>
+</html>

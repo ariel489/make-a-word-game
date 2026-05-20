@@ -25,7 +25,7 @@
     width: 100%;
     box-shadow: 0 8px 32px rgba(0,0,0,0.3);
   }
-  h1 { text-align: center; margin-bottom: 20px; font-size: 2.2em; }
+  h1 { text-align: center; margin-bottom: 16px; font-size: 2.2em; }
   h2 { text-align: center; margin-bottom: 14px; font-size: 1.3em; }
   .screen { display: none; }
   .screen.active { display: block; }
@@ -43,12 +43,12 @@
   }
   button:hover:not(:disabled) { background: #ff5252; transform: translateY(-2px); }
   button:disabled { background: #999; cursor: not-allowed; }
-  .mode-select { display: flex; flex-direction: column; align-items: center; gap: 15px; margin-top: 20px; }
-  .mode-select button { width: 280px; font-size: 1.1em; padding: 15px; }
-  .rules { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; margin-top: 22px; line-height: 1.6; }
-  .name-fields { display: flex; flex-direction: column; gap: 12px; max-width: 420px; margin: 0 auto; }
-  .name-fields label { font-weight: bold; }
-  .name-fields input {
+  .menu-actions { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 18px; }
+  .menu-actions button { width: 300px; font-size: 1.05em; padding: 14px; }
+  .rules { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; margin-top: 22px; line-height: 1.6; font-size: .95em; }
+  .form-row { max-width: 420px; margin: 0 auto 12px; }
+  .form-row label { display: block; font-weight: bold; margin-bottom: 6px; }
+  .form-row input, .form-row select {
     width: 100%;
     padding: 12px;
     border-radius: 10px;
@@ -56,7 +56,49 @@
     font-size: 1em;
     color: #333;
   }
-  .name-actions { text-align: center; margin-top: 18px; }
+  .center { text-align: center; }
+  .room-banner {
+    background: rgba(0,0,0,0.25);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .room-code {
+    font-family: 'Courier New', monospace;
+    font-size: 1.6em;
+    font-weight: bold;
+    letter-spacing: 4px;
+    background: #fff;
+    color: #764ba2;
+    padding: 6px 14px;
+    border-radius: 8px;
+  }
+  .copy-btn { padding: 8px 14px; font-size: .9em; }
+  .lobby-list {
+    background: rgba(0,0,0,0.22);
+    border-radius: 12px;
+    padding: 14px;
+    margin: 16px 0;
+  }
+  .lobby-list .player-line {
+    padding: 6px 0;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .lobby-list .player-line:last-child { border-bottom: none; }
+  .badge {
+    background: #ff6b6b;
+    border-radius: 999px;
+    padding: 2px 10px;
+    font-size: .8em;
+    font-weight: bold;
+  }
   .letters-box {
     background: #fff;
     color: #333;
@@ -73,23 +115,9 @@
     min-height: 1.1em;
   }
   .letters.hidden { color: #ccc; }
-  .sub {
-    color: #666;
-    font-size: .95em;
-    margin-top: 8px;
-  }
-  .timer {
-    font-size: 2.2em;
-    font-weight: bold;
-    color: #ff6b6b;
-    text-align: center;
-    margin: 10px 0 18px;
-  }
-  .players-grid {
-    display: grid;
-    gap: 16px;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  }
+  .sub { color: #666; font-size: .95em; margin-top: 8px; }
+  .timer { font-size: 2.2em; font-weight: bold; color: #ff6b6b; text-align: center; margin: 10px 0 18px; }
+  .players-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
   .player-card {
     background: rgba(0,0,0,0.22);
     padding: 16px;
@@ -100,22 +128,12 @@
     border: 2px solid transparent;
     transition: border-color .2s;
   }
+  .player-card.me { border-color: #ffd700; }
   .player-card.scored { border-color: #2ecc71; }
   .player-card.failed { border-color: #e74c3c; }
-  .player-card .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .player-card .pname { font-weight: bold; font-size: 1.15em; }
-  .player-card .pscore {
-    background: #ff6b6b;
-    border-radius: 999px;
-    padding: 4px 12px;
-    font-weight: bold;
-    min-width: 38px;
-    text-align: center;
-  }
+  .player-card .header { display: flex; justify-content: space-between; align-items: center; }
+  .player-card .pname { font-weight: bold; font-size: 1.1em; }
+  .player-card .pscore { background: #ff6b6b; border-radius: 999px; padding: 4px 12px; font-weight: bold; min-width: 38px; text-align: center; }
   .player-card .row { display: flex; gap: 8px; }
   .player-card input {
     flex: 1;
@@ -128,40 +146,18 @@
     text-transform: lowercase;
   }
   .player-card input:disabled { background: #ddd; }
-  .player-card .msg {
-    font-size: .9em;
-    min-height: 1.1em;
-    padding: 4px 6px;
-    border-radius: 6px;
-  }
+  .player-card .msg { font-size: .9em; min-height: 1.1em; padding: 4px 6px; border-radius: 6px; }
   .player-card .msg.valid { background: rgba(46,204,113,.35); }
   .player-card .msg.invalid { background: rgba(231,76,60,.35); }
   .controls { text-align: center; margin: 16px 0; }
-  .winner {
-    font-size: 2.4em;
-    text-align: center;
-    color: #ffd700;
-    margin: 20px 0;
-    font-weight: bold;
-  }
-  .scoreboard-final {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 14px;
-    margin-bottom: 18px;
-  }
-  .scoreboard-final .p {
-    background: rgba(0,0,0,0.22);
-    padding: 12px 18px;
-    border-radius: 12px;
-    text-align: center;
-    min-width: 130px;
-  }
+  .winner { font-size: 2.4em; text-align: center; color: #ffd700; margin: 20px 0; font-weight: bold; }
+  .scoreboard-final { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; margin-bottom: 18px; }
+  .scoreboard-final .p { background: rgba(0,0,0,0.22); padding: 12px 18px; border-radius: 12px; text-align: center; min-width: 130px; }
   .scoreboard-final .p .n { font-weight: bold; }
   .scoreboard-final .p .s { font-size: 1.8em; }
-  .center { text-align: center; }
-  .small-note { text-align:center; font-size:.9em; opacity:.85; margin-top: 8px; }
+  .small-note { text-align: center; font-size: .88em; opacity: .85; margin-top: 8px; }
+  .status { text-align: center; opacity: .85; font-style: italic; min-height: 1.2em; margin: 8px 0; }
+  .err { color: #ffd1d1; text-align: center; min-height: 1.2em; margin-top: 8px; }
 </style>
 </head>
 <body>
@@ -170,42 +166,91 @@
 
   <!-- Menu -->
   <div id="menuScreen" class="screen active">
-    <p class="center">Choose number of players:</p>
-    <div class="mode-select">
-      <button onclick="chooseMode(2)">2 Players (First to 2 wins)</button>
-      <button onclick="chooseMode(3)">3 Players (First to 3 wins)</button>
+    <p class="center">Online multiplayer — play with friends anywhere!</p>
+    <div class="menu-actions">
+      <button onclick="showCreate()">Create Room</button>
+      <button onclick="showJoin()">Join Room</button>
     </div>
     <div class="rules">
       <strong>How to play:</strong><br>
-      • All players play at the same time, side by side.<br>
-      • Two random letters appear when "Start Round" is clicked, and a 12-second timer begins.<br>
-      • Each player types a real English word containing BOTH letters and submits it.<br>
-      • Copy and paste are disabled.<br>
-      • Valid unique word = +1 point. Invalid word or no submission = no point.<br>
-      • First player to reach the target score wins!
+      • Host creates a room and shares the 6-letter code.<br>
+      • Friends join from anywhere using the code.<br>
+      • Once everyone's in, host clicks Start. All players see the same 2 letters at the same time.<br>
+      • You have 12 seconds to type a real English word containing BOTH letters.<br>
+      • Copy &amp; paste are disabled. Used words can't be repeated.<br>
+      • First to 2 points (2 players) or 3 points (3 players) wins!
     </div>
   </div>
 
-  <!-- Name entry -->
-  <div id="nameScreen" class="screen">
-    <h2 id="nameHeading">Enter player names</h2>
-    <div class="name-fields" id="nameFields"></div>
-    <div class="name-actions">
-      <button onclick="backToMenu()">Back</button>
-      <button onclick="startGame()">Start Game</button>
+  <!-- Create Room -->
+  <div id="createScreen" class="screen">
+    <h2>Create a Room</h2>
+    <div class="form-row">
+      <label for="hostName">Your name</label>
+      <input id="hostName" type="text" maxlength="20" placeholder="Your name" />
     </div>
+    <div class="form-row">
+      <label for="numPlayersSelect">Number of players</label>
+      <select id="numPlayersSelect">
+        <option value="2">2 Players (first to 2 wins)</option>
+        <option value="3">3 Players (first to 3 wins)</option>
+      </select>
+    </div>
+    <div class="center">
+      <button onclick="backToMenu()">Back</button>
+      <button onclick="createRoom()">Create Room</button>
+    </div>
+    <div class="err" id="createErr"></div>
+  </div>
+
+  <!-- Join Room -->
+  <div id="joinScreen" class="screen">
+    <h2>Join a Room</h2>
+    <div class="form-row">
+      <label for="joinName">Your name</label>
+      <input id="joinName" type="text" maxlength="20" placeholder="Your name" />
+    </div>
+    <div class="form-row">
+      <label for="joinCode">Room code</label>
+      <input id="joinCode" type="text" maxlength="6" placeholder="ABC123" style="text-transform:uppercase;letter-spacing:4px;font-family:monospace;" />
+    </div>
+    <div class="center">
+      <button onclick="backToMenu()">Back</button>
+      <button onclick="joinRoom()">Join</button>
+    </div>
+    <div class="err" id="joinErr"></div>
+  </div>
+
+  <!-- Lobby -->
+  <div id="lobbyScreen" class="screen">
+    <div class="room-banner">
+      <div>Room code: <span class="room-code" id="lobbyCode">------</span></div>
+      <button class="copy-btn" onclick="copyCode()">Copy code</button>
+    </div>
+    <h2>Waiting for players...</h2>
+    <div class="lobby-list" id="lobbyList"></div>
+    <div class="status" id="lobbyStatus"></div>
+    <div class="center">
+      <button onclick="leaveRoom()">Leave</button>
+      <button id="startBtn" onclick="hostStartGame()" disabled>Start Game</button>
+    </div>
+    <div class="small-note">Only the host can start the game. Game starts when room is full.</div>
   </div>
 
   <!-- Game -->
   <div id="gameScreen" class="screen">
+    <div class="room-banner">
+      <div>Room: <span class="room-code" id="gameCode">------</span></div>
+      <div class="status" id="roundStatus" style="margin:0;"></div>
+    </div>
     <div class="letters-box">
       <div class="letters hidden" id="lettersDisplay">? ?</div>
       <div class="sub">Make a word containing both letters</div>
     </div>
     <div class="timer" id="timer">12</div>
     <div class="controls">
-      <button id="startRoundBtn" onclick="startRound()">Start Round</button>
-      <button id="quitBtn" onclick="backToMenu()">Quit</button>
+      <button id="startRoundBtn" onclick="hostStartRound()" disabled>Start Round</button>
+      <button onclick="leaveRoom()">Quit</button>
     </div>
     <div class="players-grid" id="playersGrid"></div>
     <div class="small-note">Press Enter inside your box to submit. Each correct word can only be used once per game.</div>
@@ -216,21 +261,42 @@
     <div class="winner" id="winnerText"></div>
     <div class="scoreboard-final" id="finalScoreboard"></div>
     <div class="center">
-      <button onclick="backToMenu()">Play Again</button>
+      <button onclick="leaveRoom()">Back to Menu</button>
     </div>
   </div>
 </div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, deleteDoc,
+  runTransaction, serverTimestamp, deleteField
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-<script>
-let numPlayers = 2;
-let targetScore = 2;
-let players = []; // {name, score, submitted, input, msgEl, cardEl}
-let letters = ['',''];
-let timeLeft = 12;
-let timerInterval = null;
-let roundActive = false;
-let usedWords = new Set();
-let pendingValidations = 0;
+const firebaseConfig = {
+  apiKey: "AIzaSyCS9-6k5wQFcSlehPk2Zktqc9pMLmMtK5U",
+  authDomain: "make-a-word-game.firebaseapp.com",
+  projectId: "make-a-word-game",
+  storageBucket: "make-a-word-game.firebasestorage.app",
+  messagingSenderId: "260379099305",
+  appId: "1:260379099305:web:500690579069ddd340e9b8"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Local player state
+const state = {
+  roomCode: null,
+  unsubscribe: null,
+  myId: 'p_' + Math.random().toString(36).slice(2, 10),
+  myName: '',
+  isHost: false,
+  currentRoom: null,
+  cards: {},      // playerId -> {cardEl, inputEl, btnEl, scoreEl, msgEl}
+  timerInterval: null,
+  lastRoundId: null,
+  submittingForRound: null
+};
 
 const VOWELS = 'AEIOU';
 const CONSONANTS = 'BCDFGHJKLMNPRSTW';
@@ -241,52 +307,229 @@ function randomLetters() {
   return Math.random() < 0.5 ? [a,b] : [b,a];
 }
 
-function chooseMode(n) {
-  numPlayers = n;
-  targetScore = n;
-  document.getElementById('nameHeading').textContent = 'Enter ' + n + ' player names';
-  const wrap = document.getElementById('nameFields');
-  wrap.innerHTML = '';
-  for (let i = 0; i < n; i++) {
-    const row = document.createElement('div');
-    row.innerHTML = '<label for="pname'+i+'">Player '+(i+1)+'</label>' +
-                    '<input id="pname'+i+'" type="text" maxlength="20" placeholder="Player '+(i+1)+' name" />';
-    wrap.appendChild(row);
-  }
-  showScreen('nameScreen');
-  setTimeout(() => { const f = document.getElementById('pname0'); if (f) f.focus(); }, 50);
-}
-
-function backToMenu() {
-  clearInterval(timerInterval);
-  roundActive = false;
-  showScreen('menuScreen');
+function randomCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let s = '';
+  for (let i = 0; i < 6; i++) s += chars[Math.floor(Math.random()*chars.length)];
+  return s;
 }
 
 function showScreen(id) {
-  ['menuScreen','nameScreen','gameScreen','endScreen'].forEach(s => {
+  ['menuScreen','createScreen','joinScreen','lobbyScreen','gameScreen','endScreen'].forEach(s => {
     document.getElementById(s).classList.toggle('active', s === id);
   });
 }
 
-function startGame() {
-  players = [];
-  usedWords = new Set();
-  for (let i = 0; i < numPlayers; i++) {
-    const v = (document.getElementById('pname'+i).value || '').trim();
-    players.push({ name: v || ('Player ' + (i+1)), score: 0 });
+window.showCreate = () => {
+  document.getElementById('createErr').textContent = '';
+  document.getElementById('hostName').value = '';
+  showScreen('createScreen');
+  setTimeout(() => document.getElementById('hostName').focus(), 50);
+};
+window.showJoin = () => {
+  document.getElementById('joinErr').textContent = '';
+  document.getElementById('joinName').value = '';
+  document.getElementById('joinCode').value = '';
+  showScreen('joinScreen');
+  setTimeout(() => document.getElementById('joinName').focus(), 50);
+};
+window.backToMenu = () => showScreen('menuScreen');
+
+window.createRoom = async () => {
+  const name = (document.getElementById('hostName').value || '').trim();
+  const maxPlayers = parseInt(document.getElementById('numPlayersSelect').value, 10);
+  const errEl = document.getElementById('createErr');
+  errEl.textContent = '';
+  if (!name) { errEl.textContent = 'Please enter your name.'; return; }
+  state.myName = name;
+
+  // Find an unused code (try a few times)
+  let code = null;
+  for (let i = 0; i < 5; i++) {
+    const c = randomCode();
+    const snap = await getDoc(doc(db, 'rooms', c));
+    if (!snap.exists()) { code = c; break; }
   }
-  buildPlayerCards();
-  showScreen('gameScreen');
-  prepareRound();
+  if (!code) { errEl.textContent = 'Could not create room. Try again.'; return; }
+
+  state.roomCode = code;
+  state.isHost = true;
+
+  try {
+    await setDoc(doc(db, 'rooms', code), {
+      hostId: state.myId,
+      maxPlayers,
+      targetScore: maxPlayers,
+      status: 'lobby',
+      players: [
+        { id: state.myId, name: name, score: 0 }
+      ],
+      usedWords: [],
+      round: null,
+      winnerId: null,
+      createdAt: serverTimestamp()
+    });
+    enterRoom();
+  } catch (e) {
+    errEl.textContent = 'Error: ' + (e.message || e);
+  }
+};
+
+window.joinRoom = async () => {
+  const name = (document.getElementById('joinName').value || '').trim();
+  let code = (document.getElementById('joinCode').value || '').trim().toUpperCase();
+  const errEl = document.getElementById('joinErr');
+  errEl.textContent = '';
+  if (!name) { errEl.textContent = 'Please enter your name.'; return; }
+  if (code.length !== 6) { errEl.textContent = 'Room code should be 6 characters.'; return; }
+
+  state.myName = name;
+  state.roomCode = code;
+  state.isHost = false;
+
+  try {
+    const ref = doc(db, 'rooms', code);
+    await runTransaction(db, async (tx) => {
+      const snap = await tx.get(ref);
+      if (!snap.exists()) throw new Error('Room not found.');
+      const data = snap.data();
+      if (data.status !== 'lobby') throw new Error('Game already started.');
+      if (data.players.some(p => p.id === state.myId)) return;
+      if (data.players.length >= data.maxPlayers) throw new Error('Room is full.');
+      const newPlayers = [...data.players, { id: state.myId, name, score: 0 }];
+      tx.update(ref, { players: newPlayers });
+    });
+    enterRoom();
+  } catch (e) {
+    errEl.textContent = e.message || String(e);
+  }
+};
+
+function enterRoom() {
+  document.getElementById('lobbyCode').textContent = state.roomCode;
+  document.getElementById('gameCode').textContent = state.roomCode;
+  showScreen('lobbyScreen');
+  if (state.unsubscribe) state.unsubscribe();
+  state.unsubscribe = onSnapshot(doc(db, 'rooms', state.roomCode), (snap) => {
+    if (!snap.exists()) {
+      alert('Room was closed.');
+      cleanupAndReturnToMenu();
+      return;
+    }
+    const data = snap.data();
+    state.currentRoom = data;
+    renderRoom(data);
+  });
 }
 
-function buildPlayerCards() {
+window.copyCode = async () => {
+  try {
+    await navigator.clipboard.writeText(state.roomCode);
+    document.getElementById('lobbyStatus').textContent = 'Code copied!';
+    setTimeout(() => {
+      const el = document.getElementById('lobbyStatus');
+      if (el.textContent === 'Code copied!') el.textContent = '';
+    }, 1500);
+  } catch (e) {
+    document.getElementById('lobbyStatus').textContent = 'Code: ' + state.roomCode;
+  }
+};
+
+window.leaveRoom = async () => {
+  if (!state.roomCode) { cleanupAndReturnToMenu(); return; }
+  const ref = doc(db, 'rooms', state.roomCode);
+  try {
+    await runTransaction(db, async (tx) => {
+      const snap = await tx.get(ref);
+      if (!snap.exists()) return;
+      const data = snap.data();
+      const remaining = (data.players || []).filter(p => p.id !== state.myId);
+      if (remaining.length === 0 || data.hostId === state.myId) {
+        // Host leaving or last player -> delete room
+        tx.delete(ref);
+      } else {
+        tx.update(ref, { players: remaining });
+      }
+    });
+  } catch (e) {}
+  cleanupAndReturnToMenu();
+};
+
+function cleanupAndReturnToMenu() {
+  if (state.unsubscribe) { state.unsubscribe(); state.unsubscribe = null; }
+  if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
+  state.roomCode = null;
+  state.isHost = false;
+  state.currentRoom = null;
+  state.cards = {};
+  state.lastRoundId = null;
+  state.submittingForRound = null;
+  showScreen('menuScreen');
+}
+
+function renderRoom(data) {
+  state.isHost = data.hostId === state.myId;
+  if (data.status === 'lobby') {
+    renderLobby(data);
+  } else if (data.status === 'playing') {
+    if (!document.getElementById('gameScreen').classList.contains('active')) {
+      showScreen('gameScreen');
+      buildPlayerCards(data);
+    } else {
+      // Update cards if player list changed
+      buildPlayerCards(data);
+    }
+    renderGame(data);
+  } else if (data.status === 'ended') {
+    renderEnd(data);
+  }
+}
+
+function renderLobby(data) {
+  const list = document.getElementById('lobbyList');
+  list.innerHTML = '';
+  data.players.forEach(p => {
+    const line = document.createElement('div');
+    line.className = 'player-line';
+    const tags = [];
+    if (p.id === data.hostId) tags.push('host');
+    if (p.id === state.myId) tags.push('you');
+    line.innerHTML = '<span>' + escapeHtml(p.name) + '</span>' +
+                     '<span>' + tags.map(t => '<span class="badge">'+t+'</span>').join(' ') + '</span>';
+    list.appendChild(line);
+  });
+  document.getElementById('lobbyStatus').textContent =
+    data.players.length + ' / ' + data.maxPlayers + ' players';
+  const startBtn = document.getElementById('startBtn');
+  startBtn.style.display = state.isHost ? '' : 'none';
+  startBtn.disabled = !(state.isHost && data.players.length === data.maxPlayers);
+}
+
+window.hostStartGame = async () => {
+  if (!state.isHost) return;
+  const ref = doc(db, 'rooms', state.roomCode);
+  await updateDoc(ref, {
+    status: 'playing',
+    round: null,
+    usedWords: [],
+    winnerId: null
+  });
+};
+
+function buildPlayerCards(data) {
   const grid = document.getElementById('playersGrid');
+  // Rebuild from scratch only if player set changed
+  const existingIds = Object.keys(state.cards);
+  const newIds = data.players.map(p => p.id);
+  const sameSet = existingIds.length === newIds.length &&
+                  existingIds.every(id => newIds.includes(id));
+  if (sameSet && grid.children.length === data.players.length) return;
+
   grid.innerHTML = '';
-  players.forEach((p, idx) => {
+  state.cards = {};
+  data.players.forEach(p => {
     const card = document.createElement('div');
-    card.className = 'player-card';
+    card.className = 'player-card' + (p.id === state.myId ? ' me' : '');
     card.innerHTML =
       '<div class="header">' +
         '<div class="pname"></div>' +
@@ -302,141 +545,266 @@ function buildPlayerCards() {
     const inp = card.querySelector('input');
     const btn = card.querySelector('button');
     const msg = card.querySelector('.msg');
-    card.querySelector('.pname').textContent = p.name;
+    card.querySelector('.pname').textContent = p.name + (p.id === state.myId ? ' (you)' : '');
 
-    // Block copy / paste / cut / drag / right-click
-    ['paste','copy','cut','drop','dragstart','dragover','contextmenu'].forEach(evt => {
-      inp.addEventListener(evt, e => e.preventDefault());
-    });
-    inp.addEventListener('keydown', e => {
-      if ((e.ctrlKey || e.metaKey) && ['c','v','x','a','C','V','X','A'].includes(e.key)) {
-        e.preventDefault();
-      }
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        submitWord(idx);
-      }
-    });
-    btn.addEventListener('click', () => submitWord(idx));
+    if (p.id === state.myId) {
+      ['paste','copy','cut','drop','dragstart','dragover','contextmenu'].forEach(evt => {
+        inp.addEventListener(evt, e => e.preventDefault());
+      });
+      inp.addEventListener('keydown', e => {
+        if ((e.ctrlKey || e.metaKey) && ['c','v','x','a','C','V','X','A'].includes(e.key)) {
+          e.preventDefault();
+        }
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          submitMyWord();
+        }
+      });
+      btn.addEventListener('click', submitMyWord);
+    } else {
+      inp.placeholder = "Opponent's input...";
+    }
 
-    p.input = inp;
-    p.btn = btn;
-    p.msgEl = msg;
-    p.cardEl = card;
-    p.scoreEl = card.querySelector('.pscore');
-    p.submitted = false;
-  });
-  updateScores();
-}
-
-function updateScores() {
-  players.forEach(p => { p.scoreEl.textContent = p.score; });
-}
-
-function prepareRound() {
-  roundActive = false;
-  letters = randomLetters();
-  const ld = document.getElementById('lettersDisplay');
-  ld.textContent = '? ?';
-  ld.classList.add('hidden');
-  document.getElementById('timer').textContent = '12';
-  document.getElementById('startRoundBtn').disabled = false;
-  document.getElementById('startRoundBtn').textContent = 'Start Round';
-  players.forEach(p => {
-    p.input.value = '';
-    p.input.disabled = true;
-    p.btn.disabled = true;
-    p.msgEl.textContent = '';
-    p.msgEl.className = 'msg';
-    p.cardEl.classList.remove('scored','failed');
-    p.submitted = false;
+    state.cards[p.id] = {
+      cardEl: card,
+      inputEl: inp,
+      btnEl: btn,
+      msgEl: msg,
+      scoreEl: card.querySelector('.pscore'),
+      nameEl: card.querySelector('.pname')
+    };
   });
 }
 
-function startRound() {
-  if (roundActive) return;
-  roundActive = true;
-  // REVEAL the letters now
+function renderGame(data) {
+  // Update scores on cards
+  data.players.forEach(p => {
+    const c = state.cards[p.id];
+    if (c) c.scoreEl.textContent = p.score;
+  });
+
   const ld = document.getElementById('lettersDisplay');
-  ld.textContent = letters[0] + '  ' + letters[1];
+  const timerEl = document.getElementById('timer');
+  const startBtn = document.getElementById('startRoundBtn');
+  const status = document.getElementById('roundStatus');
+
+  const round = data.round;
+  if (!round) {
+    // Between rounds
+    if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
+    ld.textContent = '? ?';
+    ld.classList.add('hidden');
+    timerEl.textContent = '12';
+    startBtn.style.display = state.isHost ? '' : 'none';
+    startBtn.disabled = !state.isHost;
+    startBtn.textContent = 'Start Round';
+    status.textContent = state.isHost ? 'You are host. Click Start Round.' : 'Waiting for host to start...';
+    // Reset my input
+    const me = state.cards[state.myId];
+    if (me) {
+      me.inputEl.value = '';
+      me.inputEl.disabled = true;
+      me.btnEl.disabled = true;
+      me.msgEl.textContent = '';
+      me.msgEl.className = 'msg';
+      me.cardEl.classList.remove('scored','failed');
+    }
+    Object.entries(state.cards).forEach(([id, c]) => {
+      if (id !== state.myId) {
+        c.msgEl.textContent = '';
+        c.msgEl.className = 'msg';
+        c.cardEl.classList.remove('scored','failed');
+      }
+    });
+    return;
+  }
+
+  // Active round
+  ld.textContent = round.letters[0] + '  ' + round.letters[1];
   ld.classList.remove('hidden');
+  startBtn.disabled = true;
+  status.textContent = 'Round in progress!';
 
-  document.getElementById('startRoundBtn').disabled = true;
-  players.forEach(p => {
-    p.input.disabled = false;
-    p.btn.disabled = false;
-  });
-  if (players[0] && players[0].input) players[0].input.focus();
-
-  timeLeft = 12;
-  document.getElementById('timer').textContent = timeLeft;
-  timerInterval = setInterval(() => {
-    timeLeft--;
-    document.getElementById('timer').textContent = timeLeft;
-    if (timeLeft <= 0) {
-      clearInterval(timerInterval);
-      endRound();
+  // Server-anchored timer
+  const startMs = round.startMs;
+  if (state.timerInterval) clearInterval(state.timerInterval);
+  const tick = () => {
+    const elapsed = (Date.now() - startMs) / 1000;
+    const left = Math.max(0, Math.ceil(12 - elapsed));
+    timerEl.textContent = left;
+    if (left <= 0) {
+      clearInterval(state.timerInterval);
+      state.timerInterval = null;
+      timerEl.textContent = '0';
+      // Host triggers end-of-round resolution if not already moved on
+      if (state.isHost) {
+        maybeEndRound();
+      }
     }
-  }, 1000);
+  };
+  tick();
+  state.timerInterval = setInterval(tick, 250);
+
+  // Per-player submission feedback
+  const subs = round.submissions || {};
+  data.players.forEach(p => {
+    const c = state.cards[p.id];
+    if (!c) return;
+    const sub = subs[p.id];
+    if (sub) {
+      c.cardEl.classList.toggle('scored', !!sub.valid);
+      c.cardEl.classList.toggle('failed', !sub.valid);
+      if (p.id === state.myId) {
+        c.msgEl.textContent = (sub.valid ? '✅ ' : '❌ ') + '"' + sub.word + '"' + (sub.valid ? ' +1!' : ' rejected');
+      } else {
+        c.msgEl.textContent = (sub.valid ? '✅ scored!' : '❌ missed');
+      }
+      c.msgEl.className = 'msg ' + (sub.valid ? 'valid' : 'invalid');
+    } else {
+      c.cardEl.classList.remove('scored','failed');
+      if (p.id !== state.myId) {
+        c.msgEl.textContent = 'typing...';
+        c.msgEl.className = 'msg';
+      }
+    }
+  });
+
+  // Enable my input if I haven't submitted yet
+  const me = state.cards[state.myId];
+  if (me) {
+    const mySub = subs[state.myId];
+    if (mySub) {
+      me.inputEl.disabled = true;
+      me.btnEl.disabled = true;
+    } else {
+      me.inputEl.disabled = false;
+      me.btnEl.disabled = false;
+      // Auto-focus once when round starts
+      if (state.lastRoundId !== round.id) {
+        me.inputEl.value = '';
+        me.msgEl.textContent = '';
+        me.msgEl.className = 'msg';
+        me.cardEl.classList.remove('scored','failed');
+        setTimeout(() => me.inputEl.focus(), 50);
+      }
+    }
+  }
+  state.lastRoundId = round.id;
 }
 
-async function submitWord(idx) {
-  if (!roundActive) return;
-  const p = players[idx];
-  if (p.submitted) return;
-  const raw = (p.input.value || '').trim().toLowerCase();
+async function submitMyWord() {
+  const me = state.cards[state.myId];
+  if (!me) return;
+  const data = state.currentRoom;
+  if (!data || !data.round) return;
+  const round = data.round;
+  const subs = round.submissions || {};
+  if (subs[state.myId]) return;
+  if (state.submittingForRound === round.id) return;
+
+  const raw = (me.inputEl.value || '').trim().toLowerCase();
   if (!raw) return;
-
-  const l1 = letters[0].toLowerCase();
-  const l2 = letters[1].toLowerCase();
-
-  if (!/^[a-z]+$/.test(raw)) {
-    flash(p, 'invalid', '❌ Letters only.');
-    return;
-  }
+  const l1 = round.letters[0].toLowerCase();
+  const l2 = round.letters[1].toLowerCase();
+  if (!/^[a-z]+$/.test(raw)) { localFlash(me, 'invalid', '❌ Letters only.'); return; }
   if (!raw.includes(l1) || !raw.includes(l2)) {
-    flash(p, 'invalid', '❌ Must contain "' + letters[0] + '" and "' + letters[1] + '".');
-    return;
-  }
-  if (usedWords.has(raw)) {
-    flash(p, 'invalid', '❌ Already used this game.');
+    localFlash(me, 'invalid', '❌ Must contain "' + round.letters[0] + '" and "' + round.letters[1] + '".');
     return;
   }
 
-  // Lock this player while validating
-  p.submitted = true;
-  p.input.disabled = true;
-  p.btn.disabled = true;
-  flash(p, '', '⏳ Checking "' + raw + '"...');
-  pendingValidations++;
+  state.submittingForRound = round.id;
+  me.inputEl.disabled = true;
+  me.btnEl.disabled = true;
+  localFlash(me, '', '⏳ Checking "' + raw + '"...');
 
+  // Check elapsed time
+  const elapsed = (Date.now() - round.startMs) / 1000;
+  if (elapsed > 12) {
+    state.submittingForRound = null;
+    localFlash(me, 'invalid', '⏰ Too late.');
+    return;
+  }
+
+  // Check dictionary
   const ok = await checkDictionary(raw);
-  pendingValidations--;
+  let valid = ok;
 
-  if (!ok) {
-    flash(p, 'invalid', '❌ "' + raw + '" is not a valid word.');
-    p.cardEl.classList.add('failed');
-  } else {
-    usedWords.add(raw);
-    p.score++;
-    updateScores();
-    flash(p, 'valid', '✅ "' + raw + '" +1 point!');
-    p.cardEl.classList.add('scored');
+  // Run transaction: mark my submission, possibly increment my score
+  const ref = doc(db, 'rooms', state.roomCode);
+  try {
+    await runTransaction(db, async (tx) => {
+      const snap = await tx.get(ref);
+      if (!snap.exists()) throw new Error('Room gone');
+      const d = snap.data();
+      if (!d.round || d.round.id !== round.id) throw new Error('Round changed');
+      const s = d.round.submissions || {};
+      if (s[state.myId]) return;
+      const used = new Set(d.usedWords || []);
+      if (used.has(raw)) valid = false;
 
-    // Instant win check
-    if (p.score >= targetScore) {
-      clearInterval(timerInterval);
-      // Let other in-flight requests finish quickly, then end
-      setTimeout(() => endRound(true), 400);
-      return;
-    }
+      s[state.myId] = { word: raw, valid: valid };
+      const updates = { 'round.submissions': s };
+      const players = d.players.map(p => ({ ...p }));
+      if (valid) {
+        const idx = players.findIndex(p => p.id === state.myId);
+        if (idx >= 0) players[idx].score = (players[idx].score || 0) + 1;
+        updates.players = players;
+        updates.usedWords = [...(d.usedWords || []), raw];
+        // Check immediate win
+        if (players[idx] && players[idx].score >= d.targetScore) {
+          updates.status = 'ended';
+          updates.winnerId = state.myId;
+        }
+      }
+      tx.update(ref, updates);
+    });
+  } catch (e) {
+    // ignore
   }
+  state.submittingForRound = null;
+}
 
-  // If everyone has submitted, end the round early
-  if (players.every(pl => pl.submitted) && pendingValidations === 0) {
-    clearInterval(timerInterval);
-    setTimeout(() => endRound(), 400);
-  }
+async function maybeEndRound() {
+  // Host only: after timer ends, advance the round
+  const ref = doc(db, 'rooms', state.roomCode);
+  try {
+    await runTransaction(db, async (tx) => {
+      const snap = await tx.get(ref);
+      if (!snap.exists()) return;
+      const d = snap.data();
+      if (!d.round) return;
+      // Confirm timer has expired
+      const elapsed = (Date.now() - d.round.startMs) / 1000;
+      if (elapsed < 12) return;
+      // If someone already won, end the game
+      const top = Math.max(...d.players.map(p => p.score || 0));
+      const winners = d.players.filter(p => (p.score || 0) === top && top >= d.targetScore);
+      if (winners.length === 1) {
+        tx.update(ref, { status: 'ended', winnerId: winners[0].id, round: null });
+      } else {
+        // Clear round; host will start next
+        tx.update(ref, { round: null });
+      }
+    });
+  } catch (e) {}
+}
+
+window.hostStartRound = async () => {
+  if (!state.isHost) return;
+  const ref = doc(db, 'rooms', state.roomCode);
+  const letters = randomLetters();
+  const round = {
+    id: 'r_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+    letters,
+    startMs: Date.now(),
+    submissions: {}
+  };
+  await updateDoc(ref, { round });
+};
+
+function localFlash(c, kind, text) {
+  c.msgEl.textContent = text;
+  c.msgEl.className = 'msg ' + (kind || '');
 }
 
 async function checkDictionary(word) {
@@ -448,48 +816,16 @@ async function checkDictionary(word) {
   }
 }
 
-function flash(p, kind, text) {
-  p.msgEl.textContent = text;
-  p.msgEl.className = 'msg ' + (kind || '');
-}
-
-function endRound(forceWinner) {
-  roundActive = false;
-  clearInterval(timerInterval);
-  players.forEach(p => {
-    p.input.disabled = true;
-    p.btn.disabled = true;
-    if (!p.submitted) {
-      flash(p, 'invalid', '⏰ No submission.');
-      p.cardEl.classList.add('failed');
-    }
-  });
-
-  // Determine winner: highest score that has reached target
-  const top = Math.max(...players.map(p => p.score));
-  const winners = players.filter(p => p.score === top && p.score >= targetScore);
-
-  if (winners.length === 1) {
-    showWinner(winners[0]);
-    return;
-  }
-  if (winners.length > 1) {
-    // tied at or above target -> sudden death next round
-    setTimeout(prepareRound, 1500);
-    return;
-  }
-  // No winner yet -> next round
-  setTimeout(prepareRound, 1500);
-}
-
-function showWinner(p) {
-  document.getElementById('winnerText').textContent = '🏆 ' + p.name + ' wins!';
+function renderEnd(data) {
+  if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
+  const winner = (data.players || []).find(p => p.id === data.winnerId);
+  document.getElementById('winnerText').textContent = winner ? ('🏆 ' + winner.name + ' wins!') : 'Game over!';
   const fs = document.getElementById('finalScoreboard');
   fs.innerHTML = '';
-  players.forEach(pl => {
+  (data.players || []).forEach(p => {
     const d = document.createElement('div');
     d.className = 'p';
-    d.innerHTML = '<div class="n">' + escapeHtml(pl.name) + '</div><div class="s">' + pl.score + '</div>';
+    d.innerHTML = '<div class="n">' + escapeHtml(p.name) + '</div><div class="s">' + (p.score||0) + '</div>';
     fs.appendChild(d);
   });
   showScreen('endScreen');
@@ -498,6 +834,25 @@ function showWinner(p) {
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
+
+// Clean up if user closes tab
+window.addEventListener('beforeunload', () => {
+  if (state.roomCode) {
+    const ref = doc(db, 'rooms', state.roomCode);
+    // Best-effort cleanup
+    runTransaction(db, async (tx) => {
+      const snap = await tx.get(ref);
+      if (!snap.exists()) return;
+      const data = snap.data();
+      const remaining = (data.players || []).filter(p => p.id !== state.myId);
+      if (remaining.length === 0 || data.hostId === state.myId) {
+        tx.delete(ref);
+      } else {
+        tx.update(ref, { players: remaining });
+      }
+    }).catch(() => {});
+  }
+});
 </script>
 </body>
 </html>

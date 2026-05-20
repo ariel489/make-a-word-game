@@ -20,12 +20,13 @@
     background: rgba(255,255,255,0.12);
     backdrop-filter: blur(10px);
     border-radius: 20px;
-    padding: 30px;
-    max-width: 700px;
+    padding: 28px;
+    max-width: 1100px;
     width: 100%;
     box-shadow: 0 8px 32px rgba(0,0,0,0.3);
   }
   h1 { text-align: center; margin-bottom: 20px; font-size: 2.2em; }
+  h2 { text-align: center; margin-bottom: 14px; font-size: 1.3em; }
   .screen { display: none; }
   .screen.active { display: block; }
   button {
@@ -43,117 +44,179 @@
   button:hover:not(:disabled) { background: #ff5252; transform: translateY(-2px); }
   button:disabled { background: #999; cursor: not-allowed; }
   .mode-select { display: flex; flex-direction: column; align-items: center; gap: 15px; margin-top: 20px; }
-  .mode-select button { width: 250px; font-size: 1.1em; padding: 15px; }
-  .rules { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; margin-top: 20px; line-height: 1.6; }
-  .scoreboard {
-    display: flex;
-    justify-content: space-around;
-    background: rgba(0,0,0,0.2);
-    padding: 15px;
+  .mode-select button { width: 280px; font-size: 1.1em; padding: 15px; }
+  .rules { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; margin-top: 22px; line-height: 1.6; }
+  .name-fields { display: flex; flex-direction: column; gap: 12px; max-width: 420px; margin: 0 auto; }
+  .name-fields label { font-weight: bold; }
+  .name-fields input {
+    width: 100%;
+    padding: 12px;
     border-radius: 10px;
-    margin-bottom: 20px;
+    border: none;
+    font-size: 1em;
+    color: #333;
   }
-  .player-score { text-align: center; padding: 5px 15px; border-radius: 8px; min-width: 100px; }
-  .player-score.active { background: #ff6b6b; }
-  .player-score .name { font-weight: bold; font-size: 1.1em; }
-  .player-score .score { font-size: 1.8em; }
+  .name-actions { text-align: center; margin-top: 18px; }
   .letters-box {
     background: #fff;
     color: #333;
-    padding: 20px;
+    padding: 22px;
     border-radius: 15px;
     text-align: center;
-    margin: 20px 0;
+    margin: 16px 0;
   }
   .letters {
     font-size: 4em;
     font-weight: bold;
     letter-spacing: 20px;
     color: #764ba2;
-    margin-bottom: 10px;
+    min-height: 1.1em;
+  }
+  .letters.hidden { color: #ccc; }
+  .sub {
+    color: #666;
+    font-size: .95em;
+    margin-top: 8px;
   }
   .timer {
-    font-size: 2em;
+    font-size: 2.2em;
     font-weight: bold;
     color: #ff6b6b;
-    margin: 15px 0;
+    text-align: center;
+    margin: 10px 0 18px;
   }
-  .turn-label { font-size: 1.3em; text-align: center; margin-bottom: 15px; }
-  .input-area { display: flex; gap: 10px; margin: 15px 0; }
-  #wordInput {
+  .players-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+  .player-card {
+    background: rgba(0,0,0,0.22);
+    padding: 16px;
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border: 2px solid transparent;
+    transition: border-color .2s;
+  }
+  .player-card.scored { border-color: #2ecc71; }
+  .player-card.failed { border-color: #e74c3c; }
+  .player-card .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .player-card .pname { font-weight: bold; font-size: 1.15em; }
+  .player-card .pscore {
+    background: #ff6b6b;
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-weight: bold;
+    min-width: 38px;
+    text-align: center;
+  }
+  .player-card .row { display: flex; gap: 8px; }
+  .player-card input {
     flex: 1;
-    padding: 14px;
-    font-size: 1.2em;
+    padding: 12px;
+    font-size: 1.05em;
     border-radius: 10px;
     border: none;
     outline: none;
     color: #333;
     text-transform: lowercase;
   }
-  #wordInput:disabled { background: #ddd; }
-  .message {
-    text-align: center;
-    padding: 12px;
-    border-radius: 10px;
-    margin: 10px 0;
-    min-height: 24px;
-    font-weight: bold;
+  .player-card input:disabled { background: #ddd; }
+  .player-card .msg {
+    font-size: .9em;
+    min-height: 1.1em;
+    padding: 4px 6px;
+    border-radius: 6px;
   }
-  .message.valid { background: rgba(46, 204, 113, 0.4); }
-  .message.invalid { background: rgba(231, 76, 60, 0.4); }
-  .center { text-align: center; }
+  .player-card .msg.valid { background: rgba(46,204,113,.35); }
+  .player-card .msg.invalid { background: rgba(231,76,60,.35); }
+  .controls { text-align: center; margin: 16px 0; }
   .winner {
-    font-size: 2.5em;
+    font-size: 2.4em;
     text-align: center;
     color: #ffd700;
     margin: 20px 0;
     font-weight: bold;
   }
+  .scoreboard-final {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+  .scoreboard-final .p {
+    background: rgba(0,0,0,0.22);
+    padding: 12px 18px;
+    border-radius: 12px;
+    text-align: center;
+    min-width: 130px;
+  }
+  .scoreboard-final .p .n { font-weight: bold; }
+  .scoreboard-final .p .s { font-size: 1.8em; }
+  .center { text-align: center; }
+  .small-note { text-align:center; font-size:.9em; opacity:.85; margin-top: 8px; }
 </style>
 </head>
 <body>
 <div class="container">
   <h1>🎮 Make a Word Game</h1>
 
+  <!-- Menu -->
   <div id="menuScreen" class="screen active">
     <p class="center">Choose number of players:</p>
     <div class="mode-select">
-      <button onclick="startGame(2)">2 Players (First to 2 wins)</button>
-      <button onclick="startGame(3)">3 Players (First to 3 wins)</button>
+      <button onclick="chooseMode(2)">2 Players (First to 2 wins)</button>
+      <button onclick="chooseMode(3)">3 Players (First to 3 wins)</button>
     </div>
     <div class="rules">
       <strong>How to play:</strong><br>
-      • Two random letters are shown.<br>
-      • The current player has 12 seconds to type a real word that contains BOTH letters.<br>
-      • Copy &amp; paste are disabled.<br>
-      • Valid word = 1 point. Invalid word or timeout = no point.<br>
-      • Players take turns. First to reach the target score wins!
+      • All players play at the same time, side by side.<br>
+      • Two random letters appear when "Start Round" is clicked, and a 12-second timer begins.<br>
+      • Each player types a real English word containing BOTH letters and submits it.<br>
+      • Copy and paste are disabled.<br>
+      • Valid unique word = +1 point. Invalid word or no submission = no point.<br>
+      • First player to reach the target score wins!
     </div>
   </div>
 
+  <!-- Name entry -->
+  <div id="nameScreen" class="screen">
+    <h2 id="nameHeading">Enter player names</h2>
+    <div class="name-fields" id="nameFields"></div>
+    <div class="name-actions">
+      <button onclick="backToMenu()">Back</button>
+      <button onclick="startGame()">Start Game</button>
+    </div>
+  </div>
+
+  <!-- Game -->
   <div id="gameScreen" class="screen">
-    <div class="scoreboard" id="scoreboard"></div>
-    <div class="turn-label" id="turnLabel">Player 1's turn</div>
     <div class="letters-box">
-      <div class="letters" id="lettersDisplay">- -</div>
-      <div style="color:#666;font-size:.95em;">Make a word containing both letters</div>
+      <div class="letters hidden" id="lettersDisplay">? ?</div>
+      <div class="sub">Make a word containing both letters</div>
     </div>
     <div class="timer" id="timer">12</div>
-    <div class="input-area">
-      <input type="text" id="wordInput" placeholder="Type your word..." autocomplete="off" />
-      <button id="submitBtn" onclick="submitWord()">Submit</button>
+    <div class="controls">
+      <button id="startRoundBtn" onclick="startRound()">Start Round</button>
+      <button id="quitBtn" onclick="backToMenu()">Quit</button>
     </div>
-    <div class="center">
-      <button id="startTurnBtn" onclick="startTurn()">Start</button>
-    </div>
-    <div class="message" id="message"></div>
+    <div class="players-grid" id="playersGrid"></div>
+    <div class="small-note">Press Enter inside your box to submit. Each correct word can only be used once per game.</div>
   </div>
 
+  <!-- End -->
   <div id="endScreen" class="screen">
     <div class="winner" id="winnerText"></div>
-    <div class="scoreboard" id="finalScoreboard"></div>
+    <div class="scoreboard-final" id="finalScoreboard"></div>
     <div class="center">
-      <button onclick="resetToMenu()">Play Again</button>
+      <button onclick="backToMenu()">Play Again</button>
     </div>
   </div>
 </div>
@@ -161,13 +224,13 @@
 <script>
 let numPlayers = 2;
 let targetScore = 2;
-let scores = [];
-let currentPlayer = 0;
-let letters = ['', ''];
+let players = []; // {name, score, submitted, input, msgEl, cardEl}
+let letters = ['',''];
 let timeLeft = 12;
 let timerInterval = null;
-let turnActive = false;
+let roundActive = false;
 let usedWords = new Set();
+let pendingValidations = 0;
 
 const VOWELS = 'AEIOU';
 const CONSONANTS = 'BCDFGHJKLMNPRSTW';
@@ -178,107 +241,202 @@ function randomLetters() {
   return Math.random() < 0.5 ? [a,b] : [b,a];
 }
 
-function startGame(players) {
-  numPlayers = players;
-  targetScore = players;
-  scores = new Array(players).fill(0);
-  currentPlayer = 0;
-  usedWords = new Set();
-  document.getElementById('menuScreen').classList.remove('active');
-  document.getElementById('endScreen').classList.remove('active');
-  document.getElementById('gameScreen').classList.add('active');
-  renderScoreboard('scoreboard');
-  prepareTurn();
-}
-
-function renderScoreboard(id) {
-  const sb = document.getElementById(id);
-  sb.innerHTML = '';
-  for (let i = 0; i < numPlayers; i++) {
-    const div = document.createElement('div');
-    div.className = 'player-score' + (i === currentPlayer && id === 'scoreboard' ? ' active' : '');
-    div.innerHTML = '<div class="name">Player ' + (i+1) + '</div><div class="score">' + scores[i] + '</div>';
-    sb.appendChild(div);
+function chooseMode(n) {
+  numPlayers = n;
+  targetScore = n;
+  document.getElementById('nameHeading').textContent = 'Enter ' + n + ' player names';
+  const wrap = document.getElementById('nameFields');
+  wrap.innerHTML = '';
+  for (let i = 0; i < n; i++) {
+    const row = document.createElement('div');
+    row.innerHTML = '<label for="pname'+i+'">Player '+(i+1)+'</label>' +
+                    '<input id="pname'+i+'" type="text" maxlength="20" placeholder="Player '+(i+1)+' name" />';
+    wrap.appendChild(row);
   }
+  showScreen('nameScreen');
+  setTimeout(() => { const f = document.getElementById('pname0'); if (f) f.focus(); }, 50);
 }
 
-function prepareTurn() {
-  turnActive = false;
+function backToMenu() {
+  clearInterval(timerInterval);
+  roundActive = false;
+  showScreen('menuScreen');
+}
+
+function showScreen(id) {
+  ['menuScreen','nameScreen','gameScreen','endScreen'].forEach(s => {
+    document.getElementById(s).classList.toggle('active', s === id);
+  });
+}
+
+function startGame() {
+  players = [];
+  usedWords = new Set();
+  for (let i = 0; i < numPlayers; i++) {
+    const v = (document.getElementById('pname'+i).value || '').trim();
+    players.push({ name: v || ('Player ' + (i+1)), score: 0 });
+  }
+  buildPlayerCards();
+  showScreen('gameScreen');
+  prepareRound();
+}
+
+function buildPlayerCards() {
+  const grid = document.getElementById('playersGrid');
+  grid.innerHTML = '';
+  players.forEach((p, idx) => {
+    const card = document.createElement('div');
+    card.className = 'player-card';
+    card.innerHTML =
+      '<div class="header">' +
+        '<div class="pname"></div>' +
+        '<div class="pscore">0</div>' +
+      '</div>' +
+      '<div class="row">' +
+        '<input type="text" placeholder="Type your word..." autocomplete="off" disabled />' +
+        '<button disabled>Submit</button>' +
+      '</div>' +
+      '<div class="msg"></div>';
+    grid.appendChild(card);
+
+    const inp = card.querySelector('input');
+    const btn = card.querySelector('button');
+    const msg = card.querySelector('.msg');
+    card.querySelector('.pname').textContent = p.name;
+
+    // Block copy / paste / cut / drag / right-click
+    ['paste','copy','cut','drop','dragstart','dragover','contextmenu'].forEach(evt => {
+      inp.addEventListener(evt, e => e.preventDefault());
+    });
+    inp.addEventListener('keydown', e => {
+      if ((e.ctrlKey || e.metaKey) && ['c','v','x','a','C','V','X','A'].includes(e.key)) {
+        e.preventDefault();
+      }
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        submitWord(idx);
+      }
+    });
+    btn.addEventListener('click', () => submitWord(idx));
+
+    p.input = inp;
+    p.btn = btn;
+    p.msgEl = msg;
+    p.cardEl = card;
+    p.scoreEl = card.querySelector('.pscore');
+    p.submitted = false;
+  });
+  updateScores();
+}
+
+function updateScores() {
+  players.forEach(p => { p.scoreEl.textContent = p.score; });
+}
+
+function prepareRound() {
+  roundActive = false;
   letters = randomLetters();
-  document.getElementById('lettersDisplay').textContent = letters[0] + '  ' + letters[1];
-  document.getElementById('turnLabel').textContent = 'Player ' + (currentPlayer + 1) + "'s turn";
+  const ld = document.getElementById('lettersDisplay');
+  ld.textContent = '? ?';
+  ld.classList.add('hidden');
   document.getElementById('timer').textContent = '12';
-  document.getElementById('wordInput').value = '';
-  document.getElementById('wordInput').disabled = true;
-  document.getElementById('submitBtn').disabled = true;
-  document.getElementById('startTurnBtn').disabled = false;
-  document.getElementById('startTurnBtn').textContent = 'Start';
-  document.getElementById('message').textContent = '';
-  document.getElementById('message').className = 'message';
-  renderScoreboard('scoreboard');
+  document.getElementById('startRoundBtn').disabled = false;
+  document.getElementById('startRoundBtn').textContent = 'Start Round';
+  players.forEach(p => {
+    p.input.value = '';
+    p.input.disabled = true;
+    p.btn.disabled = true;
+    p.msgEl.textContent = '';
+    p.msgEl.className = 'msg';
+    p.cardEl.classList.remove('scored','failed');
+    p.submitted = false;
+  });
 }
 
-function startTurn() {
-  if (turnActive) return;
-  turnActive = true;
+function startRound() {
+  if (roundActive) return;
+  roundActive = true;
+  // REVEAL the letters now
+  const ld = document.getElementById('lettersDisplay');
+  ld.textContent = letters[0] + '  ' + letters[1];
+  ld.classList.remove('hidden');
+
+  document.getElementById('startRoundBtn').disabled = true;
+  players.forEach(p => {
+    p.input.disabled = false;
+    p.btn.disabled = false;
+  });
+  if (players[0] && players[0].input) players[0].input.focus();
+
   timeLeft = 12;
   document.getElementById('timer').textContent = timeLeft;
-  document.getElementById('wordInput').disabled = false;
-  document.getElementById('submitBtn').disabled = false;
-  document.getElementById('startTurnBtn').disabled = true;
-  document.getElementById('wordInput').focus();
-
   timerInterval = setInterval(() => {
     timeLeft--;
     document.getElementById('timer').textContent = timeLeft;
     if (timeLeft <= 0) {
       clearInterval(timerInterval);
-      endTurn(false, "⏰ Time's up! No point awarded.");
+      endRound();
     }
   }, 1000);
 }
 
-async function submitWord() {
-  if (!turnActive) return;
-  const raw = document.getElementById('wordInput').value.trim().toLowerCase();
+async function submitWord(idx) {
+  if (!roundActive) return;
+  const p = players[idx];
+  if (p.submitted) return;
+  const raw = (p.input.value || '').trim().toLowerCase();
   if (!raw) return;
 
-  // must contain both letters
   const l1 = letters[0].toLowerCase();
   const l2 = letters[1].toLowerCase();
-  if (!raw.includes(l1) || !raw.includes(l2)) {
-    flash('invalid', '❌ Word must contain both "' + letters[0] + '" and "' + letters[1] + '".');
-    return;
-  }
 
-  if (usedWords.has(raw)) {
-    flash('invalid', '❌ Word already used this game.');
-    return;
-  }
-
-  // only letters
   if (!/^[a-z]+$/.test(raw)) {
-    flash('invalid', '❌ Letters only, please.');
+    flash(p, 'invalid', '❌ Letters only.');
+    return;
+  }
+  if (!raw.includes(l1) || !raw.includes(l2)) {
+    flash(p, 'invalid', '❌ Must contain "' + letters[0] + '" and "' + letters[1] + '".');
+    return;
+  }
+  if (usedWords.has(raw)) {
+    flash(p, 'invalid', '❌ Already used this game.');
     return;
   }
 
-  // Disable while validating
-  document.getElementById('submitBtn').disabled = true;
-  document.getElementById('wordInput').disabled = true;
+  // Lock this player while validating
+  p.submitted = true;
+  p.input.disabled = true;
+  p.btn.disabled = true;
+  flash(p, '', '⏳ Checking "' + raw + '"...');
+  pendingValidations++;
 
-  const isWord = await checkDictionary(raw);
-  if (!isWord) {
-    flash('invalid', '❌ "' + raw + '" is not a valid English word.');
-    document.getElementById('submitBtn').disabled = false;
-    document.getElementById('wordInput').disabled = false;
-    document.getElementById('wordInput').focus();
-    return;
+  const ok = await checkDictionary(raw);
+  pendingValidations--;
+
+  if (!ok) {
+    flash(p, 'invalid', '❌ "' + raw + '" is not a valid word.');
+    p.cardEl.classList.add('failed');
+  } else {
+    usedWords.add(raw);
+    p.score++;
+    updateScores();
+    flash(p, 'valid', '✅ "' + raw + '" +1 point!');
+    p.cardEl.classList.add('scored');
+
+    // Instant win check
+    if (p.score >= targetScore) {
+      clearInterval(timerInterval);
+      // Let other in-flight requests finish quickly, then end
+      setTimeout(() => endRound(true), 400);
+      return;
+    }
   }
 
-  usedWords.add(raw);
-  clearInterval(timerInterval);
-  scores[currentPlayer]++;
-  endTurn(true, '✅ "' + raw + '" is valid! +1 point for Player ' + (currentPlayer + 1) + '.');
+  // If everyone has submitted, end the round early
+  if (players.every(pl => pl.submitted) && pendingValidations === 0) {
+    clearInterval(timerInterval);
+    setTimeout(() => endRound(), 400);
+  }
 }
 
 async function checkDictionary(word) {
@@ -286,67 +444,60 @@ async function checkDictionary(word) {
     const r = await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/' + encodeURIComponent(word));
     return r.ok;
   } catch (e) {
-    // Offline fallback: accept if length >= 2
     return word.length >= 2;
   }
 }
 
-function flash(kind, msg) {
-  const m = document.getElementById('message');
-  m.textContent = msg;
-  m.className = 'message ' + kind;
+function flash(p, kind, text) {
+  p.msgEl.textContent = text;
+  p.msgEl.className = 'msg ' + (kind || '');
 }
 
-function endTurn(success, msg) {
-  turnActive = false;
+function endRound(forceWinner) {
+  roundActive = false;
   clearInterval(timerInterval);
-  document.getElementById('wordInput').disabled = true;
-  document.getElementById('submitBtn').disabled = true;
-  flash(success ? 'valid' : 'invalid', msg);
-  renderScoreboard('scoreboard');
+  players.forEach(p => {
+    p.input.disabled = true;
+    p.btn.disabled = true;
+    if (!p.submitted) {
+      flash(p, 'invalid', '⏰ No submission.');
+      p.cardEl.classList.add('failed');
+    }
+  });
 
-  // check winner
-  if (scores[currentPlayer] >= targetScore) {
-    setTimeout(showWinner, 1200);
+  // Determine winner: highest score that has reached target
+  const top = Math.max(...players.map(p => p.score));
+  const winners = players.filter(p => p.score === top && p.score >= targetScore);
+
+  if (winners.length === 1) {
+    showWinner(winners[0]);
     return;
   }
-
-  currentPlayer = (currentPlayer + 1) % numPlayers;
-  setTimeout(() => {
-    prepareTurn();
-  }, 1800);
+  if (winners.length > 1) {
+    // tied at or above target -> sudden death next round
+    setTimeout(prepareRound, 1500);
+    return;
+  }
+  // No winner yet -> next round
+  setTimeout(prepareRound, 1500);
 }
 
-function showWinner() {
-  document.getElementById('gameScreen').classList.remove('active');
-  document.getElementById('endScreen').classList.add('active');
-  document.getElementById('winnerText').textContent = '🏆 Player ' + (currentPlayer + 1) + ' wins!';
-  renderScoreboard('finalScoreboard');
-}
-
-function resetToMenu() {
-  document.getElementById('endScreen').classList.remove('active');
-  document.getElementById('gameScreen').classList.remove('active');
-  document.getElementById('menuScreen').classList.add('active');
-}
-
-// Disable copy/paste/cut/drag on the word input
-window.addEventListener('DOMContentLoaded', () => {
-  const inp = document.getElementById('wordInput');
-  ['paste','copy','cut','drop','dragstart','dragover','contextmenu'].forEach(evt => {
-    inp.addEventListener(evt, e => e.preventDefault());
+function showWinner(p) {
+  document.getElementById('winnerText').textContent = '🏆 ' + p.name + ' wins!';
+  const fs = document.getElementById('finalScoreboard');
+  fs.innerHTML = '';
+  players.forEach(pl => {
+    const d = document.createElement('div');
+    d.className = 'p';
+    d.innerHTML = '<div class="n">' + escapeHtml(pl.name) + '</div><div class="s">' + pl.score + '</div>';
+    fs.appendChild(d);
   });
-  inp.addEventListener('keydown', e => {
-    // Block Ctrl/Cmd + C/V/X/A
-    if ((e.ctrlKey || e.metaKey) && ['c','v','x','a','C','V','X','A'].includes(e.key)) {
-      e.preventDefault();
-    }
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      submitWord();
-    }
-  });
-});
+  showScreen('endScreen');
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
 </script>
 </body>
 </html>

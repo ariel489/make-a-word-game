@@ -245,6 +245,8 @@
     <div class="room-banner">
       <div>Room code: <span class="room-code" id="lobbyCode">------</span></div>
       <button class="copy-btn" onclick="copyCode()">Copy code</button>
+      <button class="copy-btn" onclick="copyInviteLink()">Copy invite link</button>
+      <button class="copy-btn" onclick="shareInviteLink()">Share</button>
     </div>
     <h2>Waiting for players...</h2>
     <div class="lobby-list" id="lobbyList"></div>
@@ -452,6 +454,39 @@ function enterRoom() {
     renderRoom(data);
   });
 }
+
+function buildInviteLink() {
+  const url = new URL(window.location.href);
+  url.hash = '';
+  url.search = '?room=' + encodeURIComponent(state.roomCode);
+  return url.toString();
+}
+
+window.copyInviteLink = async () => {
+  try {
+    await navigator.clipboard.writeText(buildInviteLink());
+    document.getElementById('lobbyStatus').textContent = 'Invite link copied!';
+    setTimeout(() => {
+      const el = document.getElementById('lobbyStatus');
+      if (el && el.textContent === 'Invite link copied!') el.textContent = '';
+    }, 1500);
+  } catch (e) {
+    document.getElementById('lobbyStatus').textContent = buildInviteLink();
+  }
+};
+
+window.shareInviteLink = async () => {
+  const link = buildInviteLink();
+  const shareData = { title: 'Make a Word Game', text: 'Join my room with code ' + state.roomCode, url: link };
+  try {
+    if (navigator.share) {
+      await navigator.share(shareData);
+    } else {
+      await navigator.clipboard.writeText(link);
+      document.getElementById('lobbyStatus').textContent = 'Invite link copied!';
+    }
+  } catch (e) { /* user cancelled or share blocked */ }
+};
 
 window.copyCode = async () => {
   try {
@@ -877,6 +912,16 @@ function renderEnd(data) {
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
+
+window.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const incoming = (params.get('room') || '').trim().toUpperCase();
+  if (incoming && /^[A-Z0-9]{6}$/.test(incoming)) {
+    showJoin();
+    document.getElementById('joinCode').value = incoming;
+    setTimeout(() => document.getElementById('joinName').focus(), 50);
+  }
+});
 
 window.addEventListener('beforeunload', () => {
   if (state.roomCode) {
